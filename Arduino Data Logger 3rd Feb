@@ -1,0 +1,126 @@
+#include <SD.h>
+#include <Wire.h>
+#include "RTClib.h"
+
+RTC_DS1307 RTC;
+
+File myFile;
+
+int ldrVal;
+int tempVal;
+
+int ldrPin = 0;
+int tempPin = 5;
+
+
+void setup() {
+
+  Serial.begin(9600);
+  
+  //do the SD initialisation and feedback here
+  //Serial.print("Initializing SD card...");
+  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+  // Note that even if it's not used as the CS pin, the hardware SS pin 
+  // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
+  // or the SD library functions will not work. 
+   pinMode(10, OUTPUT);
+   
+  if (!SD.begin(10)) {
+    //Serial.println("initialization failed!");
+    return;
+  }
+  //Serial.println("initialization done.");
+  
+ //Do the RTC begin and feedback
+  
+    Wire.begin();
+    RTC.begin();
+
+  if (! RTC.isrunning()) {
+    //Serial.println("RTC is NOT running!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    // uncomment it & upload to set the time, date and start run the RTC!
+    //RTC.adjust(DateTime(__DATE__, __TIME__));
+  }
+  
+   myFile = SD.open("logFile.txt", FILE_WRITE);
+  
+  // if the file opened okay, write to it:
+  if (myFile) {
+    
+    
+    DateTime now = RTC.now();
+    myFile.print(now.year(), DEC);
+    myFile.print('/');
+    myFile.print(now.month(), DEC);
+    myFile.print('/');
+    myFile.print(now.day(), DEC);
+    myFile.print(' ');
+    myFile.print(now.hour(), DEC);
+    myFile.print(':');
+    myFile.print(now.minute(), DEC);
+    myFile.print(':');
+    myFile.print(now.second(), DEC);
+    myFile.println();
+    
+    myFile.print("Light");
+    myFile.print(",");
+    myFile.print("Temp");
+    myFile.println();
+    
+  
+	// close the file:
+    myFile.close();
+    //Serial.println("done.");
+  } 
+  
+
+}
+
+void loop() {
+ 
+  ldrVal = analogRead(ldrPin);
+  tempVal = analogRead(tempPin);
+  
+  
+  //Insert SD write stuff below here
+  
+  
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open("logFile.txt", FILE_WRITE);
+  
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println(ldrVal);
+    delay(50);
+    Serial.println(tempVal);
+
+    
+    myFile.print(ldrVal);
+    myFile.print(",");
+    myFile.print(tempVal);
+    myFile.println();
+	// close the file:
+    myFile.close();
+    //Serial.println("done.");
+  } 
+  
+  
+  else {
+    //if the file didn't open, print an error:
+    //Serial.println("error opening logFile.txt");
+  }
+  
+  
+  
+  
+  
+  
+  
+  //Insert SD write stuff above here
+  
+  delay(100);
+  
+  
+}
